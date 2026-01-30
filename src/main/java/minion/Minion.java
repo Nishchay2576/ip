@@ -25,7 +25,8 @@ public class Minion {
                 System.out.println("\t____________________________________________________________");
                 System.out.println("\tHere are the tasks in your list:");
                 for (int i = 1; i < taskCounter + 1; i++) {
-                    System.out.println("\t" + i + ". " + "[" + tasks[i - 1].getStatusIcon() + "] " + tasks[i - 1].getDescription());
+                    System.out.println("\t" + i + ". " + "[" + tasks[i - 1].getStatusIcon() + "] "
+                            + tasks[i - 1].getDescription());
                 }
                 System.out.println("\t____________________________________________________________");
                 continue;
