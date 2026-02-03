@@ -5,7 +5,6 @@ import java.util.Scanner;
 public class Minion {
     public static void main(String[] args) {
         Task[] tasks = new Task[100];
-        int taskCounter = 0;
 
         System.out.println("\t____________________________________________________________");
         System.out.println("\tHello! I'm Minion!");
@@ -24,7 +23,7 @@ public class Minion {
             if (userInput.equalsIgnoreCase("list")) {
                 System.out.println("\t____________________________________________________________");
                 System.out.println("\tHere are the tasks in your list:");
-                for (int i = 1; i < taskCounter + 1; i++) {
+                for (int i = 1; i <= Task.getTotalNumberOfTasks(); i++) {
                     System.out.println("\t" + i + ". " + "[" + tasks[i - 1].getStatusIcon() + "] "
                             + tasks[i - 1].getDescription());
                 }
@@ -47,7 +46,7 @@ public class Minion {
 
                 int taskToMark = Integer.parseInt((userInput.substring(5)));
 
-                if (taskToMark > taskCounter) {
+                if (taskToMark > Task.getTotalNumberOfTasks()) {
                     System.out.println("\tYou haven't added these many tasks yet. Enter a valid task number.");
                     System.out.println("\t____________________________________________________________");
                     continue;
@@ -81,7 +80,7 @@ public class Minion {
 
                 int taskToUnmark = Integer.parseInt((userInput.substring(7)));
 
-                if (taskToUnmark > taskCounter) {
+                if (taskToUnmark > Task.getTotalNumberOfTasks()) {
                     System.out.println("\tYou haven't added these many tasks yet. Enter a valid task number.");
                     System.out.println("\t____________________________________________________________");
                     continue;
@@ -105,8 +104,9 @@ public class Minion {
             System.out.println("\t" + userInput);
             System.out.println("\t____________________________________________________________");
 
-            tasks[taskCounter] = new Task(userInput);
-            taskCounter++;
+            Task newTask = new Task(userInput);
+            int index = Task.getTotalNumberOfTasks() - 1;
+            tasks[index] = newTask;
         }
 
         System.out.println("\t____________________________________________________________");
