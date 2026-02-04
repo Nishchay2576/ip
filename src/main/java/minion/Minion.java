@@ -2,52 +2,73 @@ package minion;
 
 import java.util.Scanner;
 
+/**
+ * Main class for the chatbot Minion.
+ * Provides CLI for users to manage todos, deadlines and events.
+ */
 public class Minion {
+
+    /** Separator line for console output formatting. */
     private static final String LINE_BREAK = "\t____________________________________________________________";
-    private static final String WELCOME_MESSAGE = "\tHello! I'm Minion!\n\tWhat can I do for you?";
+
+    /** Welcome message displayed. */
+    private static final String WELCOME_MESSAGE = "\t  Hello! I'm Minion!\n\t  What can I do for you?";
+
+    /** Bye message displayed. */
+    private static final String BYE_MESSAGE = "\t  Bye. Hope to see you soon!";
+
+    /** The max number of tasks that can be stored. */
     private static final int MAX_TASKS = 100;
+
+    /** Array to store task objects. */
     private static final Task[] tasks = new Task[MAX_TASKS];
 
+    /**
+     * Main method od the chatbot.
+     * Reads user commands in a loop and routes them properly.
+     *
+     * @param args (not used)
+     */
     public static void main(String[] args) {
         printWelcomeMessage();
         Scanner in = new Scanner(System.in);
 
+        // Main command running loop
         while (true) {
             String userInput = in.nextLine();
 
             if (userInput.equalsIgnoreCase("bye")) {
                 printByeMessage();
                 break;
-            }
-
-            if (userInput.equalsIgnoreCase("list")) {
+            } else if (userInput.equalsIgnoreCase("list")) {
                 handleListInput();
-                continue;
-            }
-
-            if (userInput.toLowerCase().startsWith("mark")) {
+            } else if (userInput.toLowerCase().startsWith("mark")) {
                 handleMarkInput(userInput);
-                continue;
-            }
-
-            if (userInput.toLowerCase().startsWith("unmark")) {
+            } else if (userInput.toLowerCase().startsWith("unmark")) {
                 handleUnmarkInput(userInput);
-                continue;
+            } else if (userInput.toLowerCase().startsWith("todo")) {
+                handleTodoInput(userInput);
+            } else if (userInput.toLowerCase().startsWith("deadline")) {
+                handleDeadlineInput(userInput);
+            } else if (userInput.toLowerCase().startsWith("event")){
+                handleEventInput(userInput);
+            } else {
+                System.out.println(LINE_BREAK);
+                System.out.println("\t  Please give a valid command.");
+                System.out.println(LINE_BREAK);
             }
-
-            System.out.println(LINE_BREAK);
-            System.out.println("\tI've added this task to your list:");
-            System.out.println("\t" + userInput);
-            System.out.println(LINE_BREAK);
-
-            Task newTask = new Task(userInput);
-            int index = Task.getTotalNumberOfTasks() - 1;
-            tasks[index] = newTask;
         }
-
     }
 
-    public static boolean isNotInteger(String str) {
+    //Helper methods
+
+    /**
+     * Check if a string does not contain only numbers.
+     *
+     * @param str String to be checked.
+     * @return True if it is null, empty, or non-numeric, false otherwise.
+     */
+    private static boolean isNotInteger(String str) {
         if (str == null || str.isEmpty()) return true;
         try {
             Integer.parseInt(str);
@@ -57,16 +78,23 @@ public class Minion {
         }
     }
 
+    /**
+     * Checks if the user input task number is valid for the user given command.
+     * Prints appropriate message if invalid task number is entered.
+     *
+     * @param parts The user input string split (e.g. {"mark", "1"}).
+     * @return -1 if the task number is invalid, and the task number if a valid task number is entered
+     */
     private static int getValidTaskNumber(String[] parts) {
         // Check format
         if (parts.length != 2) {
-            System.out.println("\tPlease enter the command in the format: [command] [task number]");
+            System.out.println("\t  Please enter the command in the format: [command] [task number]");
             return -1;
         }
 
         // Check if it's an integer
         if (isNotInteger(parts[1])) {
-            System.out.println("\tPlease enter a valid integer for the task number.");
+            System.out.println("\t  Please enter a valid integer for the task number.");
             return -1;
         }
 
@@ -75,52 +103,91 @@ public class Minion {
 
         // Check bounds
         if (taskNumber <= 0 || taskNumber > totalTasks) {
-            System.out.println("\tInvalid task number. You have " + totalTasks + " tasks.");
+            System.out.println("\t  Invalid task number. You have " + totalTasks + " tasks.");
             return -1;
         }
 
         return taskNumber;
     }
 
+    /**
+     * Adds the specified task to the task array and gives user feedback upon adding the task successfully.
+     * Tells the user if the tasklist is full already.
+     *
+     * @param task The task object (including Event, Todo, Deadline) to be stored.
+     */
+    private static void addTaskToList(Task task) {
+        System.out.println(LINE_BREAK);
+
+        // Check for Task array capacity
+        if (Task.getTotalNumberOfTasks() >= MAX_TASKS) {
+            System.out.println("\t  List is full! Cannot add more tasks.");
+            System.out.println(LINE_BREAK);
+            return;
+        }
+
+        int index = Task.getTotalNumberOfTasks() - 1;
+        tasks[index] = task;
+
+        System.out.println("\t  Got it. I've added this task:");
+        System.out.println("\t    " + task.toString());
+        System.out.println("\t  Now you have " + Task.getTotalNumberOfTasks() + " tasks in the list.");
+        System.out.println(LINE_BREAK);
+    }
+
+    // Welcome and Bye messages
+
+    /**
+     * Prints the welcome message of the chatbot.
+     * Used at the start of the program.
+     */
     private static void printWelcomeMessage() {
         System.out.println(LINE_BREAK);
         System.out.println(WELCOME_MESSAGE);
         System.out.println(LINE_BREAK);
     }
 
+    /**
+     * Prints bye message and terminates the program.
+     */
     private static void printByeMessage() {
         System.out.println(LINE_BREAK);
-        System.out.println("\tBye. Hope to see you soon!");
+        System.out.println(BYE_MESSAGE);
         System.out.println(LINE_BREAK);
     }
 
+    // Methods handling different user inputs
+
+    /**
+     * Displays the current list of tasks to the user.
+     * If the list is empty, prints a message indicating that no tasks have been stored yet.
+     */
     private static void handleListInput() {
         System.out.println(LINE_BREAK);
 
         // Handle the empty list case first
         if (Task.getTotalNumberOfTasks() == 0) {
-            System.out.println("\tThere are no elements in your list!");
+            System.out.println("\t  There are no elements in your list!");
             System.out.println(LINE_BREAK);
             return;
         }
 
-        //Handle the case where list is full already
-        if (Task.getTotalNumberOfTasks() >= MAX_TASKS) {
-            System.out.println("\tList is full!");
-            return;
-        }
-
         // This only runs if the list is NOT empty
-        System.out.println("\tHere are the tasks in your list:");
+        System.out.println("\t  Here are the tasks in your list:");
         for (int i = 1; i <= Task.getTotalNumberOfTasks(); i++) {
             Task currentTask = tasks[i - 1];
-            System.out.println("\t" + i + ". [" + currentTask.getStatusIcon() + "] "
-                    + currentTask.getDescription());
+            System.out.println("\t  " + i + ". " + currentTask.toString());
         }
 
         System.out.println(LINE_BREAK);
     }
 
+    /**
+     * Processes the mark command to set a specific task as completed.
+     * Checks if the task number is valid and also if the task has already been marked.
+     *
+     * @param userInput The full command string entered by the user (e.g. mark 1).
+     */
     private static void handleMarkInput(String userInput) {
         System.out.println(LINE_BREAK);
 
@@ -139,17 +206,23 @@ public class Minion {
 
         // Check if already marked
         if (taskToMark.getStatusIcon().equals("X")) {
-            System.out.println("\tThis task has already been marked as done!");
+            System.out.println("\t  This task has already been marked as done!");
             System.out.println(LINE_BREAK);
             return;
         }
 
-        System.out.println("\tNice, I've marked this task as done:");
-        System.out.println("\t" + taskToMark.getDescription());
+        System.out.println("\t  Nice, I've marked this task as done:");
         taskToMark.setDone(true);
+        System.out.println("\t  " + taskToMark.toString());
         System.out.println(LINE_BREAK);
     }
 
+    /**
+     * Processes the unmark command to set a specific task as not completed.
+     * Checks if the task number is valid and also if the task has not been marked yet.
+     *
+     * @param userInput The full command string entered by the user (e.g. unmark 1).
+     */
     private static void handleUnmarkInput(String userInput) {
         System.out.println(LINE_BREAK);
 
@@ -168,14 +241,124 @@ public class Minion {
 
         // Check if already marked
         if (taskToUnmark.getStatusIcon().equals(" ")) {
-            System.out.println("\tThis task has not been marked yet!");
+            System.out.println("\t  This task has not been marked yet!");
             System.out.println(LINE_BREAK);
             return;
         }
 
-        System.out.println("\tNice, I've marked this task as not done:");
-        System.out.println("\t" + taskToUnmark.getDescription());
+        System.out.println("\t  OK, I've marked this task as not done yet:");
         taskToUnmark.setDone(false);
+        System.out.println("\t  " + taskToUnmark.toString());
         System.out.println(LINE_BREAK);
+    }
+
+    /**
+     * Processes the todo command by extracting the task description.
+     * Checks if the description is not empty before creating a new Todo object.
+     *
+     * @param userInput The full command string entered by the user (e.g. todo read book).
+     */
+    private static void handleTodoInput(String userInput){
+        // check if the input is valid
+        int lengthOfStringTodo = 4;
+        if (userInput.trim().length() == lengthOfStringTodo) {
+            System.out.println(LINE_BREAK);
+            System.out.println("\t  The description of a todo cannot be empty!");
+            System.out.println(LINE_BREAK);
+            return;
+        }
+
+        String description = userInput.substring(5).trim();
+
+        addTaskToList(new Todo(description));
+    }
+
+    /**
+     * Processes the deadline command by extracting the task description.
+     * Checks if the description and the deadline date/time is not empty before creating a new Deadline object.
+     *
+     * @param userInput The full command string entered by the user (e.g. deadline read book /by Sunday).
+     */
+    private static void handleDeadlineInput(String userInput) {
+        // Check if the input is valid
+        int lengthOfStringDeadline = 8;
+        if (userInput.trim().length() == lengthOfStringDeadline) {
+            System.out.println(LINE_BREAK);
+            System.out.println("\t  The description of a deadline cannot be empty!");
+            System.out.println(LINE_BREAK);
+            return;
+        }
+
+        int byIndex = userInput.indexOf("/by");
+
+        // Check if /by delimiter is missing
+        if (byIndex == -1) {
+            System.out.println(LINE_BREAK);
+            System.out.println("\t  Please include a '/by' to specify the deadline!");
+            System.out.println(LINE_BREAK);
+            return;
+        }
+
+        String description = userInput.substring(lengthOfStringDeadline + 1, byIndex).trim();
+        String by = userInput.substring(byIndex+3).trim();
+
+        if (by.isEmpty()) {
+            System.out.println(LINE_BREAK);
+            System.out.println("\t  The deadline date/time cannot be empty!");
+            System.out.println(LINE_BREAK);
+            return;
+        }
+
+        addTaskToList(new Deadline(description, by));
+    }
+
+    /**
+     * Processes the event command by extracting the task description.
+     * Checks if the description, and the time range is not empty before creating a new Event object.
+     *
+     * @param userInput The full command string entered by the user (e.g. event meeting /from 2pm /to 4pm ).
+     */
+    private static void handleEventInput(String userInput) {
+        //Check if the input is valid
+        int lengthOfStringEvent = 5;
+        if (userInput.trim().length() == lengthOfStringEvent) {
+            System.out.println(LINE_BREAK);
+            System.out.println("\t  The description of an event cannot be empty!");
+            System.out.println(LINE_BREAK);
+            return;
+        }
+
+        int fromIndex = userInput.indexOf("/from");
+        int toIndex = userInput.indexOf("/to");
+
+        // Check for missing delimiters (/from or /to)
+        if (fromIndex == -1 || toIndex == -1) {
+            System.out.println(LINE_BREAK);
+            System.out.println("\t  Please use /from and /to to specify the event duration!");
+            System.out.println(LINE_BREAK);
+            return;
+        }
+
+        // Check if /from comes before /to
+        if (fromIndex > toIndex) {
+            System.out.println(LINE_BREAK);
+            System.out.println("\t  The start time (/from) must come before the end time (/to)!");
+            System.out.println(LINE_BREAK);
+            return;
+        }
+
+        String description = userInput.substring(lengthOfStringEvent + 1, fromIndex).trim();
+        String from = userInput.substring(fromIndex + 5, toIndex).trim();
+        String to = userInput.substring(toIndex + 3).trim();
+
+        // Check if any part is empty
+        if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
+            System.out.println(LINE_BREAK);
+            System.out.println("\t  Event description, start time, and end time cannot be empty!");
+            System.out.println(LINE_BREAK);
+            return;
+        }
+
+        addTaskToList(new Event(description, from, to));
     }
 }
