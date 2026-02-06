@@ -17,6 +17,28 @@ public class Minion {
     /** Bye message displayed. */
     private static final String BYE_MESSAGE = "\t  Bye. Hope to see you soon!";
 
+    // Command Constants
+    /** Command keyword for terminating the application. */
+    private static final String COMMAND_BYE = "bye";
+
+    /** Command keyword for displaying the current list of tasks. */
+    private static final String COMMAND_LIST = "list";
+
+    /** Command keyword for marking a task as completed. */
+    private static final String COMMAND_MARK = "mark";
+
+    /** Command keyword for marking a task as not yet completed. */
+    private static final String COMMAND_UNMARK = "unmark";
+
+    /** Command keyword for adding a todo task. */
+    private static final String COMMAND_TODO = "todo";
+
+    /** Command keyword for adding a task with a deadline. */
+    private static final String COMMAND_DEADLINE = "deadline";
+
+    /** Command keyword for adding a timed event. */
+    private static final String COMMAND_EVENT = "event";
+
     /** The max number of tasks that can be stored. */
     private static final int MAX_TASKS = 100;
 
@@ -24,7 +46,7 @@ public class Minion {
     private static final Task[] tasks = new Task[MAX_TASKS];
 
     /**
-     * Main method od the chatbot.
+     * Main method of the chatbot.
      * Reads user commands in a loop and routes them properly.
      *
      * @param args (not used)
@@ -36,21 +58,22 @@ public class Minion {
         // Main command running loop
         while (true) {
             String userInput = in.nextLine();
+            String lowerInput = userInput.toLowerCase(); // Consistent case handling
 
-            if (userInput.equalsIgnoreCase("bye")) {
+            if (lowerInput.equals(COMMAND_BYE)) {
                 printByeMessage();
                 break;
-            } else if (userInput.equalsIgnoreCase("list")) {
+            } else if (lowerInput.equals(COMMAND_LIST)) {
                 handleListInput();
-            } else if (userInput.toLowerCase().startsWith("mark")) {
+            } else if (lowerInput.startsWith(COMMAND_MARK)) {
                 handleMarkInput(userInput);
-            } else if (userInput.toLowerCase().startsWith("unmark")) {
+            } else if (lowerInput.startsWith(COMMAND_UNMARK)) {
                 handleUnmarkInput(userInput);
-            } else if (userInput.toLowerCase().startsWith("todo")) {
+            } else if (lowerInput.startsWith(COMMAND_TODO)) {
                 handleTodoInput(userInput);
-            } else if (userInput.toLowerCase().startsWith("deadline")) {
+            } else if (lowerInput.startsWith(COMMAND_DEADLINE)) {
                 handleDeadlineInput(userInput);
-            } else if (userInput.toLowerCase().startsWith("event")){
+            } else if (lowerInput.startsWith(COMMAND_EVENT)) {
                 handleEventInput(userInput);
             } else {
                 System.out.println(LINE_BREAK);
@@ -69,7 +92,10 @@ public class Minion {
      * @return True if it is null, empty, or non-numeric, false otherwise.
      */
     private static boolean isNotInteger(String str) {
+        // Check if string is null or empty
         if (str == null || str.isEmpty()) return true;
+
+        // Check if string can be parsed as an integer
         try {
             Integer.parseInt(str);
             return false;
@@ -126,6 +152,7 @@ public class Minion {
             return;
         }
 
+        // Add task to the task array
         int index = Task.getTotalNumberOfTasks() - 1;
         tasks[index] = task;
 
@@ -172,7 +199,7 @@ public class Minion {
             return;
         }
 
-        // This only runs if the list is NOT empty
+        // Gives all tasks in the task array
         System.out.println("\t  Here are the tasks in your list:");
         for (int i = 1; i <= Task.getTotalNumberOfTasks(); i++) {
             Task currentTask = tasks[i - 1];
@@ -194,7 +221,7 @@ public class Minion {
         // Split input by one or more whitespace characters
         String[] parts = userInput.split("\\s+");
 
-        // returns -1 if the task number is invalid, and the correct task number if the task number is valid
+        // check for valid task number
         int taskNumber = getValidTaskNumber(parts);
 
         if (taskNumber == -1) {
@@ -229,9 +256,8 @@ public class Minion {
         // Split input by one or more whitespace characters
         String[] parts = userInput.split("\\s+");
 
-        // returns -1 if the task number is invalid, and the correct task number if the task number is valid
+        // check for valid task number
         int taskNumber = getValidTaskNumber(parts);
-
         if (taskNumber == -1) {
             System.out.println(LINE_BREAK);
             return;
@@ -260,7 +286,7 @@ public class Minion {
      */
     private static void handleTodoInput(String userInput){
         // check if the input is valid
-        int lengthOfStringTodo = 4;
+        int lengthOfStringTodo = COMMAND_TODO.length();
         if (userInput.trim().length() == lengthOfStringTodo) {
             System.out.println(LINE_BREAK);
             System.out.println("\t  The description of a todo cannot be empty!");
@@ -268,8 +294,7 @@ public class Minion {
             return;
         }
 
-        String description = userInput.substring(5).trim();
-
+        String description = userInput.substring(lengthOfStringTodo + 1).trim();
         addTaskToList(new Todo(description));
     }
 
@@ -281,7 +306,7 @@ public class Minion {
      */
     private static void handleDeadlineInput(String userInput) {
         // Check if the input is valid
-        int lengthOfStringDeadline = 8;
+        int lengthOfStringDeadline = COMMAND_DEADLINE.length();
         if (userInput.trim().length() == lengthOfStringDeadline) {
             System.out.println(LINE_BREAK);
             System.out.println("\t  The description of a deadline cannot be empty!");
@@ -300,8 +325,9 @@ public class Minion {
         }
 
         String description = userInput.substring(lengthOfStringDeadline + 1, byIndex).trim();
-        String by = userInput.substring(byIndex+3).trim();
+        String by = userInput.substring(byIndex + 3).trim();
 
+        // Check if any part is empty
         if (by.isEmpty()) {
             System.out.println(LINE_BREAK);
             System.out.println("\t  The deadline date/time cannot be empty!");
@@ -320,7 +346,7 @@ public class Minion {
      */
     private static void handleEventInput(String userInput) {
         //Check if the input is valid
-        int lengthOfStringEvent = 5;
+        int lengthOfStringEvent = COMMAND_EVENT.length();
         if (userInput.trim().length() == lengthOfStringEvent) {
             System.out.println(LINE_BREAK);
             System.out.println("\t  The description of an event cannot be empty!");
@@ -354,7 +380,7 @@ public class Minion {
         // Check if any part is empty
         if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
             System.out.println(LINE_BREAK);
-            System.out.println("\t  Event description, start time, and end time cannot be empty!");
+            System.out.println("\t  Event description, start time, or end time cannot be empty!");
             System.out.println(LINE_BREAK);
             return;
         }
