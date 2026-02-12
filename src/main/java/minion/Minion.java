@@ -1,12 +1,17 @@
 package minion;
 
 import java.util.Scanner;
-import minion.task.*;
-import minion.responses.*;
+import java.util.ArrayList;
+import minion.task.Task;
+import minion.task.Todo;
+import minion.task.Deadline;
+import minion.task.Event;
+import minion.responses.MinionResponses;
 import minion.exception.MinionException;
 
+
 /**
- * Main class for the chatbot Minion.
+ * Represents the main class for the chatbot Minion.
  * Provides CLI for users to manage todos, deadlines and events.
  */
 public class Minion {
@@ -20,16 +25,14 @@ public class Minion {
     private static final String COMMAND_DEADLINE = "deadline";
     private static final String COMMAND_EVENT = "event";
 
-    /** The max number of tasks that can be stored. */
-    private static final int MAX_TASKS = 100;
-
-    /** Array to store task objects. */
-    private static final Task[] tasks = new Task[MAX_TASKS];
+    /** List to store task objects. */
+    private static final ArrayList<Task> tasks = new ArrayList<>();
 
     /**
      * Main method of the chatbot.
      * Reads user commands in a loop and routes them properly.
-     * @param args (not used)
+     *
+     * @param args (not used).
      */
     public static void main(String[] args) {
         printWelcomeMessage();
@@ -57,7 +60,7 @@ public class Minion {
                 } else if (lowerInput.startsWith(COMMAND_EVENT)) {
                     handleEventInput(userInput);
                 } else {
-                    throw new MinionException("\t  I'm sorry, but I don't know what that means :-(");
+                    throw new MinionException(MinionResponses.UNKNOWN_COMMAND);
                 }
             } catch (MinionException e) { // Catch chatbot-specific errors
                 MinionResponses.printWithLines(e.getMessage());
@@ -69,12 +72,15 @@ public class Minion {
 
     /**
      * Check if a string does not contain only numbers.
+     *
      * @param str String to be checked.
      * @return True if it is null, empty, or non-numeric, false otherwise.
      */
     private static boolean isNotInteger(String str) {
         // Check if string is null or empty
-        if (str == null || str.isEmpty()) return true;
+        if (str == null || str.isEmpty()) {
+            return true;
+        }
 
         // Check if string can be parsed as an integer
         try {
@@ -88,28 +94,30 @@ public class Minion {
     /**
      * Checks if the user input task number is valid for the user given command.
      * Prints appropriate message if invalid task number is entered.
+     *
      * @param parts The user input string split (e.g. {"mark", "1"}).
-     * @return -1 if the task number is invalid, and the task number if a valid task number is entered
+     * @return -1 if the task number is invalid, and the task number if a valid task number is entered.
      */
     private static int getValidTaskNumber(String[] parts) {
         // Check format
         if (parts.length != 2) {
-            System.out.println("\t  Please enter the command in the format: [command] [task number]");
+            MinionResponses.printWithLines(MinionResponses.ERROR_INVALID_FORMAT);
             return -1;
         }
 
         // Check if it's an integer
         if (isNotInteger(parts[1])) {
-            System.out.println("\t  Please enter a valid integer for the task number.");
+            MinionResponses.printWithLines(MinionResponses.ERROR_NOT_INT);
             return -1;
         }
 
         int taskNumber = Integer.parseInt(parts[1]);
-        int totalTasks = Task.getTotalNumberOfTasks();
+        int totalTasks = tasks.size();
 
         // Check bounds
         if (taskNumber <= 0 || taskNumber > totalTasks) {
-            System.out.println("\t  Invalid task number. You have " + totalTasks + " tasks.");
+            String errorMessage = "\t  Invalid task number. You have " + totalTasks + " tasks.";
+            MinionResponses.printWithLines(errorMessage);
             return -1;
         }
 
@@ -117,25 +125,16 @@ public class Minion {
     }
 
     /**
-     * Adds the specified task to the task array and gives user feedback upon adding the task successfully.
-     * Tells the user if the tasklist is full already.
+     * Adds the specified task to the task list and gives user feedback upon adding the task successfully.
+     *
      * @param task The task object (including Event, Todo, Deadline) to be stored.
      */
     private static void addTaskToList(Task task) {
-        // Check for Task array capacity
-        if (Task.getTotalNumberOfTasks() >= MAX_TASKS) {
-            MinionResponses.printWithLines("\t  List is full! Cannot add more tasks.");
-            Task.reduceTotalNumberOfTasksByOne();
-            return;
-        }
+        tasks.add(task);
 
-        // Add task to the task array
-        int index = Task.getTotalNumberOfTasks() - 1;
-        tasks[index] = task;
-
-        String feedback = "\t  Got it. I've added this task:\n"
+        String feedback = MinionResponses.MESSAGE_ADD_SUCCESS
                 + "\t    " + task.toString() + "\n"
-                + "\t  Now you have " + Task.getTotalNumberOfTasks() + " tasks in the list.";
+                + MinionResponses.getTaskCountMessage(tasks.size());
 
         MinionResponses.printWithLines(feedback);
     }
@@ -164,33 +163,31 @@ public class Minion {
      * If the list is empty, prints a message indicating that no tasks have been stored yet.
      */
     private static void handleListInput() {
-        System.out.println(MinionResponses.LINE_BREAK);
-
         // Handle the empty list case first
-        if (Task.getTotalNumberOfTasks() == 0) {
-            System.out.println("\t  There are no elements in your list!");
-            System.out.println(MinionResponses.LINE_BREAK);
+        if (tasks.isEmpty()) {
+            MinionResponses.printWithLines(MinionResponses.MESSAGE_EMPTY_LIST);
             return;
         }
 
-        // Gives all tasks in the task array
-        System.out.println("\t  Here are the tasks in your list:");
-        for (int i = 1; i <= Task.getTotalNumberOfTasks(); i++) {
-            Task currentTask = tasks[i - 1];
-            System.out.println("\t  " + i + ". " + currentTask.toString());
+        StringBuilder listOutput = new StringBuilder(MinionResponses.MESSAGE_LIST_HEADER);
+        for (int i = 0; i < tasks.size(); i++) {
+            Task currentTask = tasks.get(i);
+            listOutput.append("\t  ").append(i + 1).append(". ").append(currentTask.toString());
+            if (i < tasks.size() - 1) {
+                listOutput.append("\n");
+            }
         }
 
-        System.out.println(MinionResponses.LINE_BREAK);
+        MinionResponses.printWithLines(listOutput.toString());
     }
 
     /**
      * Processes the mark command to set a specific task as completed.
      * Checks if the task number is valid and also if the task has already been marked.
+     *
      * @param userInput The full command string entered by the user (e.g. mark 1).
      */
     private static void handleMarkInput(String userInput) {
-        System.out.println(MinionResponses.LINE_BREAK);
-
         // Split input by one or more whitespace characters
         String[] parts = userInput.split("\\s+");
 
@@ -198,68 +195,61 @@ public class Minion {
         int taskNumber = getValidTaskNumber(parts);
 
         if (taskNumber == -1) {
-            System.out.println(MinionResponses.LINE_BREAK);
             return;
         }
 
-        Task taskToMark = tasks[taskNumber - 1];
+        Task taskToMark = tasks.get(taskNumber - 1);
 
         // Check if already marked
         if (taskToMark.getStatusIcon().equals("X")) {
-            System.out.println("\t  This task has already been marked as done!");
-            System.out.println(MinionResponses.LINE_BREAK);
+            MinionResponses.printWithLines(MinionResponses.ERROR_ALREADY_DONE);
             return;
         }
 
-        System.out.println("\t  Nice, I've marked this task as done:");
         taskToMark.setDone(true);
-        System.out.println("\t  " + taskToMark.toString());
-        System.out.println(MinionResponses.LINE_BREAK);
+        MinionResponses.printWithLines(MinionResponses.MESSAGE_MARK_SUCCESS + "\t    " + taskToMark);
     }
 
     /**
      * Processes the unmark command to set a specific task as not completed.
      * Checks if the task number is valid and also if the task has not been marked yet.
+     *
      * @param userInput The full command string entered by the user (e.g. unmark 1).
      */
     private static void handleUnmarkInput(String userInput) {
-        System.out.println(MinionResponses.LINE_BREAK);
-
         // Split input by one or more whitespace characters
         String[] parts = userInput.split("\\s+");
 
         // check for valid task number
         int taskNumber = getValidTaskNumber(parts);
+
         if (taskNumber == -1) {
-            System.out.println(MinionResponses.LINE_BREAK);
             return;
         }
 
-        Task taskToUnmark = tasks[taskNumber - 1];
+        Task taskToUnmark = tasks.get(taskNumber - 1);
 
         // Check if already marked
         if (taskToUnmark.getStatusIcon().equals(" ")) {
-            System.out.println("\t  This task has not been marked yet!");
-            System.out.println(MinionResponses.LINE_BREAK);
+            MinionResponses.printWithLines(MinionResponses.ERROR_NOT_DONE_YET);
             return;
         }
 
-        System.out.println("\t  OK, I've marked this task as not done yet:");
         taskToUnmark.setDone(false);
-        System.out.println("\t  " + taskToUnmark.toString());
-        System.out.println(MinionResponses.LINE_BREAK);
+        MinionResponses.printWithLines(MinionResponses.MESSAGE_UNMARK_SUCCESS + "\t    " + taskToUnmark);
     }
 
     /**
      * Processes the todo command by extracting the task description.
      * Checks if the description is not empty before creating a new Todo object.
+     *
      * @param userInput The full command string entered by the user (e.g. todo read book).
      */
     private static void handleTodoInput(String userInput){
         // check if the input is valid
         int lengthOfStringTodo = COMMAND_TODO.length();
         if (userInput.trim().length() == lengthOfStringTodo) {
-            MinionResponses.printWithLines("\t  The description of a todo cannot be empty!");
+            MinionResponses.printWithLines(MinionResponses.ERROR_EMPTY_TODO);
             return;
         }
 
@@ -270,13 +260,14 @@ public class Minion {
     /**
      * Processes the deadline command by extracting the task description.
      * Checks if the description and the deadline date/time is not empty before creating a new Deadline object.
+     *
      * @param userInput The full command string entered by the user (e.g. deadline read book /by Sunday).
      */
     private static void handleDeadlineInput(String userInput) {
         // Check if the input is valid
         int lengthOfStringDeadline = COMMAND_DEADLINE.length();
         if (userInput.trim().length() == lengthOfStringDeadline) {
-            MinionResponses.printWithLines("\t  The description of a deadline cannot be empty!");
+            MinionResponses.printWithLines(MinionResponses.ERROR_EMPTY_DEADLINE);
             return;
         }
 
@@ -284,7 +275,7 @@ public class Minion {
 
         // Check if /by delimiter is missing
         if (byIndex == -1) {
-            MinionResponses.printWithLines("\t  Please include a '/by' to specify the deadline!");
+            MinionResponses.printWithLines(MinionResponses.ERROR_MISSING_BY);
             return;
         }
 
@@ -292,8 +283,8 @@ public class Minion {
         String by = userInput.substring(byIndex + 3).trim();
 
         // Check if any part is empty
-        if (by.isEmpty()) {
-            MinionResponses.printWithLines("\t  The deadline date/time cannot be empty!");
+        if (description.isEmpty() || by.isEmpty()) {
+            MinionResponses.printWithLines(MinionResponses.ERROR_DEADLINE_PART_EMPTY);
             return;
         }
 
@@ -303,13 +294,14 @@ public class Minion {
     /**
      * Processes the event command by extracting the task description.
      * Checks if the description, and the time range is not empty before creating a new Event object.
+     *
      * @param userInput The full command string entered by the user (e.g. event meeting /from 2pm /to 4pm ).
      */
     private static void handleEventInput(String userInput) {
         //Check if the input is valid
         int lengthOfStringEvent = COMMAND_EVENT.length();
         if (userInput.trim().length() == lengthOfStringEvent) {
-            MinionResponses.printWithLines("\t  The description of an event cannot be empty!");
+            MinionResponses.printWithLines(MinionResponses.ERROR_EMPTY_EVENT);
             return;
         }
 
@@ -318,13 +310,13 @@ public class Minion {
 
         // Check for missing delimiters (/from or /to)
         if (fromIndex == -1 || toIndex == -1) {
-            MinionResponses.printWithLines("\t  Please use /from and /to to specify the event duration!");
+            MinionResponses.printWithLines(MinionResponses.ERROR_MISSING_EVENT_DELIMITERS);
             return;
         }
 
         // Check if /from comes before /to
         if (fromIndex > toIndex) {
-            MinionResponses.printWithLines("\t  The start time (/from) must come before the end time (/to)!");
+            MinionResponses.printWithLines(MinionResponses.ERROR_EVENT_TIME_ORDER);
             return;
         }
 
@@ -334,7 +326,7 @@ public class Minion {
 
         // Check if any part is empty
         if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
-            MinionResponses.printWithLines("\t  Event description, start time, or end time cannot be empty!");
+            MinionResponses.printWithLines(MinionResponses.ERROR_EVENT_PART_EMPTY);
             return;
         }
 
