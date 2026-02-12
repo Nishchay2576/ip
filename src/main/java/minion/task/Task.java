@@ -13,7 +13,6 @@ public abstract class Task {
 
     /**
      * Initializes a task with a description and sets its completion status to false.
-     * Increments the global task counter upon creation.
      *
      * @param description Text describing the task.
      */

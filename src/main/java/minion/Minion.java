@@ -11,7 +11,7 @@ import minion.exception.MinionException;
 
 
 /**
- * Main class for the chatbot Minion.
+ * Represents the main class for the chatbot Minion.
  * Provides CLI for users to manage todos, deadlines and events.
  */
 public class Minion {
@@ -32,7 +32,7 @@ public class Minion {
      * Main method of the chatbot.
      * Reads user commands in a loop and routes them properly.
      *
-     * @param args (not used)
+     * @param args (not used).
      */
     public static void main(String[] args) {
         printWelcomeMessage();
@@ -125,8 +125,7 @@ public class Minion {
     }
 
     /**
-     * Adds the specified task to the task array and gives user feedback upon adding the task successfully.
-     * Tells the user if the tasklist is full already.
+     * Adds the specified task to the task list and gives user feedback upon adding the task successfully.
      *
      * @param task The task object (including Event, Todo, Deadline) to be stored.
      */
