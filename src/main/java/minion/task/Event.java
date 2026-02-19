@@ -32,4 +32,14 @@ public class Event extends Task{
     public String toString() {
         return "[E][" + getStatusIcon() + "] " + description + " (from: " + timeFrom + " to: " + timeTo + ")";
     }
+
+    /**
+     * Returns a string representation of the event task to be saved.
+     *
+     * @return Formatted string to be saved.
+     */
+    @Override
+    public String toFileFormat() {
+        return "E | " + (isDone ? "1" : "0") + " | " + description + " | " + timeFrom + " | " + timeTo;
+    }
 }

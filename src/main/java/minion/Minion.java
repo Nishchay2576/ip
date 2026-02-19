@@ -2,12 +2,14 @@ package minion;
 
 import java.util.Scanner;
 import java.util.ArrayList;
+
 import minion.task.Task;
 import minion.task.Todo;
 import minion.task.Deadline;
 import minion.task.Event;
 import minion.responses.MinionResponses;
 import minion.exception.MinionException;
+import minion.storage.Storage;
 
 
 /**
@@ -26,6 +28,10 @@ public class Minion {
     private static final String COMMAND_EVENT = "event";
     private static final String COMMAND_DELETE = "delete";
 
+    /** Variables required for saving and storing the data. */
+    private static final String FILE_PATH = "data/minion.txt"; //
+    private static Storage storage;
+
     /** List to store task objects. */
     private static final ArrayList<Task> tasks = new ArrayList<>();
 
@@ -36,6 +42,13 @@ public class Minion {
      * @param args (not used).
      */
     public static void main(String[] args) {
+        storage = new Storage(FILE_PATH);
+        try {
+            tasks.addAll(storage.load());
+        } catch (MinionException e) {
+            MinionResponses.printWithLines(e.getMessage());
+        }
+
         printWelcomeMessage();
         Scanner in = new Scanner(System.in);
 
@@ -140,6 +153,7 @@ public class Minion {
                 + MinionResponses.getTaskCountMessage(tasks.size());
 
         MinionResponses.printWithLines(feedback);
+        saveChanges();
     }
 
     // Welcome and Bye messages
@@ -211,6 +225,7 @@ public class Minion {
 
         taskToMark.setDone(true);
         MinionResponses.printWithLines(MinionResponses.MESSAGE_MARK_SUCCESS + "\t    " + taskToMark);
+        saveChanges();
     }
 
     /**
@@ -240,6 +255,7 @@ public class Minion {
 
         taskToUnmark.setDone(false);
         MinionResponses.printWithLines(MinionResponses.MESSAGE_UNMARK_SUCCESS + "\t    " + taskToUnmark);
+        saveChanges();
     }
 
     /**
@@ -362,5 +378,16 @@ public class Minion {
                 + MinionResponses.getTaskCountMessage(tasks.size());
 
         MinionResponses.printWithLines(feedback);
+        saveChanges();
+    }
+    /**
+     * Saves the current tasklist to the hard drive.
+     */
+    private static void saveChanges() {
+        try {
+            storage.save(tasks); //
+        } catch (java.io.IOException e) {
+            MinionResponses.printWithLines("\t  Bido! I couldn't save your data to the disk.");
+        }
     }
 }
