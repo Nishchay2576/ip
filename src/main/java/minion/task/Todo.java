@@ -22,4 +22,14 @@ public class Todo extends Task{
     public String toString() {
         return "[T][" + getStatusIcon() + "] " + description;
     }
+
+    /**
+     * Returns a string representation of the todo task to be saved.
+     *
+     * @return Formatted string to be saved.
+     */
+    @Override
+    public String toFileFormat() {
+        return "T | " + (isDone ? "1" : "0") + " | " + description;
+    }
 }

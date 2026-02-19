@@ -27,4 +27,14 @@ public class Deadline extends Task{
     public String toString() {
         return "[D][" + getStatusIcon() + "] " + description + " (by: " + by + ")";
     }
+
+    /**
+     * Returns a string representation of the deadline task to be saved.
+     *
+     * @return Formatted string to be saved.
+     */
+    @Override
+    public String toFileFormat() {
+        return "D | " + (isDone ? "1" : "0") + " | " + description + " | " + by;
+    }
 }

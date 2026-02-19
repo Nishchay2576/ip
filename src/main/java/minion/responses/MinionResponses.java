@@ -35,6 +35,7 @@ public class MinionResponses {
             "the end time (/to)!";
     public static final String ERROR_EVENT_PART_EMPTY = "\t  Event description, start time, or end time " +
             "cannot be empty!";
+    public static final String ERROR_LOADING_FILE = "\t  Bido... I couldn't find your save file!";
 
     /**
      * Returns the formatted string for the total task count.
