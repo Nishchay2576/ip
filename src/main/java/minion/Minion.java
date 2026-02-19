@@ -24,6 +24,7 @@ public class Minion {
     private static final String COMMAND_TODO = "todo";
     private static final String COMMAND_DEADLINE = "deadline";
     private static final String COMMAND_EVENT = "event";
+    private static final String COMMAND_DELETE = "delete";
 
     /** List to store task objects. */
     private static final ArrayList<Task> tasks = new ArrayList<>();
@@ -59,6 +60,8 @@ public class Minion {
                     handleDeadlineInput(userInput);
                 } else if (lowerInput.startsWith(COMMAND_EVENT)) {
                     handleEventInput(userInput);
+                } else if (lowerInput.startsWith(COMMAND_DELETE)) {
+                    handleDeleteInput(userInput);
                 } else {
                     throw new MinionException(MinionResponses.UNKNOWN_COMMAND);
                 }
@@ -253,6 +256,7 @@ public class Minion {
             return;
         }
 
+        //Slices after "todo". +1 to skip the space after "todo".
         String description = userInput.substring(lengthOfStringTodo + 1).trim();
         addTaskToList(new Todo(description));
     }
@@ -279,8 +283,9 @@ public class Minion {
             return;
         }
 
+        //Slices after "deadline" up to the start of "/by". +1 to skip the space after "deadline".
         String description = userInput.substring(lengthOfStringDeadline + 1, byIndex).trim();
-        String by = userInput.substring(byIndex + 3).trim();
+        String by = userInput.substring(byIndex + "/by".length()).trim();
 
         // Check if any part is empty
         if (description.isEmpty() || by.isEmpty()) {
@@ -320,9 +325,10 @@ public class Minion {
             return;
         }
 
+        //Slices after "event" up to the start of "/from". +1 to skip the space after "event".
         String description = userInput.substring(lengthOfStringEvent + 1, fromIndex).trim();
-        String from = userInput.substring(fromIndex + 5, toIndex).trim();
-        String to = userInput.substring(toIndex + 3).trim();
+        String from = userInput.substring(fromIndex + "/from".length(), toIndex).trim();
+        String to = userInput.substring(toIndex + "/to".length()).trim();
 
         // Check if any part is empty
         if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
@@ -331,5 +337,30 @@ public class Minion {
         }
 
         addTaskToList(new Event(description, from, to));
+    }
+
+    /**
+     * Processes the delete command by removing a specific task from the list.
+     *
+     * @param userInput The full command string entered by the user (e.g. delete 3).
+     */
+    private static void handleDeleteInput(String userInput) {
+        // Split input by one or more whitespace characters
+        String[] parts = userInput.split("\\s+");
+
+        // check for valid task number
+        int taskNumber = getValidTaskNumber(parts);
+
+        if (taskNumber == -1) {
+            return;
+        }
+
+        Task removedTask = tasks.remove(taskNumber - 1);
+
+        String feedback = MinionResponses.MESSAGE_DELETE_SUCCESS
+                + "\t    " + removedTask.toString() + "\n"
+                + MinionResponses.getTaskCountMessage(tasks.size());
+
+        MinionResponses.printWithLines(feedback);
     }
 }
