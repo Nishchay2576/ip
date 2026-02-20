@@ -13,7 +13,7 @@ public class MinionResponses {
 
     /** Task List Messages. */
     public static final String MESSAGE_EMPTY_LIST = "\t  Your list is as empty as a banana peel! Try adding something";
-    public static final String MESSAGE_LIST_HEADER = "\t  Here’s the breakdown of your mission:\n";
+    public static final String MESSAGE_LIST_HEADER = "\t  Here's the breakdown of your mission:\n";
     public static final String MESSAGE_ADD_SUCCESS = "\t  Ba-na-na! I've tossed this onto the pile for you:\n";
     public static final String MESSAGE_MARK_SUCCESS = "\t  Woohoo! I've marked:\n";
     public static final String MESSAGE_UNMARK_SUCCESS = "\t  OK, I've marked this task as not done yet:\n";
