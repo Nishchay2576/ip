@@ -11,6 +11,9 @@ import minion.exception.MinionException;
 import minion.responses.MinionResponses;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 /**
  * Deals with making sense of the user command.
@@ -62,7 +65,15 @@ public class Parser {
     }
 
     /**
-     * Handles the creation and addition of a Todo task.
+     * Processes a "todo" command by extracting the description and adding a new Todo task.
+     * Validates that the description is not empty, creates the task, updates the task list,
+     * provides UI feedback, and saves the changes to storage.
+     *
+     * @param input   The full raw user input string (e.g., "todo read book").
+     * @param tasks   The TaskList object where the new task will be stored.
+     * @param ui      The Ui object used to display success or error messages to the user.
+     * @param storage The Storage object used to persist the updated task list to the hard drive.
+     * @throws MinionException If the todo description is empty or invalid.
      */
     private static void handleTodo(String input, TaskList tasks, Ui ui, Storage storage)
             throws MinionException {
@@ -77,7 +88,13 @@ public class Parser {
     }
 
     /**
-     * Handles the creation and addition of a Deadline task.
+     * Processes the deadline command by extracting description and date/time info.
+     *
+     * @param input   The raw user input.
+     * @param tasks   The current task list.
+     * @param ui      The user interface for feedback.
+     * @param storage The storage for saving changes.
+     * @throws MinionException If input formats are incorrect.
      */
     private static void handleDeadline(String input, TaskList tasks, Ui ui, Storage storage)
             throws MinionException {
@@ -93,18 +110,25 @@ public class Parser {
         String description = input.substring(9, byIndex).trim();
         String by = input.substring(byIndex + 3).trim();
 
-        if (description.isEmpty() || by.isEmpty()) {
-            throw new MinionException(MinionResponses.ERROR_DEADLINE_PART_EMPTY);
-        }
+        // Smart Parsing for Hybrid Model
+        LocalDate byDate = parseDate(by);
+        LocalTime byTime = parseTime(by);
+        LocalDateTime byDateTime = parseDateTime(by);
 
-        Deadline newDeadline = new Deadline(description, by);
+        Deadline newDeadline = new Deadline(description, by, byDate, byTime, byDateTime);
         tasks.addTask(newDeadline);
         showAddFeedback(newDeadline, tasks, ui);
         save(tasks, storage, ui);
     }
 
     /**
-     * Handles the creation and addition of an Event task.
+     * Processes the event command by extracting description and start/end timings.
+     *
+     * @param input   The raw user input.
+     * @param tasks   The current task list.
+     * @param ui      The user interface for feedback.
+     * @param storage The storage for saving changes.
+     * @throws MinionException If delimiters are missing or parts are empty.
      */
     private static void handleEvent(String input, TaskList tasks, Ui ui, Storage storage)
             throws MinionException {
@@ -127,18 +151,26 @@ public class Parser {
         String from = input.substring(fromIndex + 5, toIndex).trim();
         String to = input.substring(toIndex + 3).trim();
 
-        if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
-            throw new MinionException(MinionResponses.ERROR_EVENT_PART_EMPTY);
-        }
+        // Smart Parsing for start and end times
+        Event newEvent = new Event(description, from, to,
+                parseDate(from), parseTime(from), parseDateTime(from),
+                parseDate(to), parseTime(to), parseDateTime(to));
 
-        Event newEvent = new Event(description, from, to);
         tasks.addTask(newEvent);
         showAddFeedback(newEvent, tasks, ui);
         save(tasks, storage, ui);
     }
 
     /**
-     * Handles marking a task as completed.
+     * Marks a specific task in the list as completed.
+     * Validates the task index, checks if the task is already marked to avoid redundant operations,
+     * updates the task status, and saves the updated list to storage.
+     *
+     * @param input   The raw user command (e.g., "mark 1").
+     * @param tasks   The TaskList containing the tasks to be modified.
+     * @param ui      The Ui object used to display the success message or error.
+     * @param storage The Storage object used to persist the change to the data file.
+     * @throws MinionException If the index is invalid or the task is already completed.
      */
     private static void handleMark(String input, TaskList tasks, Ui ui, Storage storage)
             throws MinionException {
@@ -155,7 +187,15 @@ public class Parser {
     }
 
     /**
-     * Handles unmarking a task as not completed.
+     * Unmarks a specific task in the list, setting its status to not completed.
+     * Ensures the index is valid and the task is currently marked as done before
+     * reverting its status and saving the changes.
+     *
+     * @param input   The raw user command (e.g., "unmark 1").
+     * @param tasks   The TaskList containing the tasks to be modified.
+     * @param ui      The Ui object used to provide feedback to the user.
+     * @param storage The Storage object for data persistence.
+     * @throws MinionException If the index is out of bounds or the task is already unmarked.
      */
     private static void handleUnmark(String input, TaskList tasks, Ui ui, Storage storage)
             throws MinionException {
@@ -172,7 +212,15 @@ public class Parser {
     }
 
     /**
-     * Handles the deletion of a task.
+     * Deletes a specific task from the task list based on the provided index.
+     * Reconstructs the task list after removal, displays a confirmation message with the
+     * removed task details and new total count, and updates the storage file.
+     *
+     * @param input   The raw user command (e.g., "delete 2").
+     * @param tasks   The TaskList from which the task will be removed.
+     * @param ui      The Ui object used to display the deletion feedback.
+     * @param storage The Storage object to save the shortened task list.
+     * @throws MinionException If the index provided is invalid or non-numeric.
      */
     private static void handleDelete(String input, TaskList tasks, Ui ui, Storage storage)
             throws MinionException {
@@ -188,7 +236,14 @@ public class Parser {
     }
 
     /**
-     * Helper to parse the integer index from user commands like 'delete 1'.
+     * Parses and validates the integer index provided in user commands.
+     * Checks that the input contains exactly one argument, that the argument is a valid
+     * integer, and that the integer falls within the current bounds of the task list.
+     *
+     * @param input The full user command string to be parsed.
+     * @param tasks The current TaskList used to validate the range of the index.
+     * @return The validated 1-based integer index provided by the user.
+     * @throws MinionException If the format is incorrect, not an integer, or out of list bounds.
      */
     private static int parseIndex(String input, TaskList tasks) throws MinionException {
         String[] parts = input.split("\\s+");
@@ -207,7 +262,56 @@ public class Parser {
     }
 
     /**
-     * Helper to show standardized add feedback via Ui.
+     * Attempts to parse a string into a LocalDate object.
+     *
+     * @param input The raw string to be parsed (expected format: yyyy-MM-dd).
+     * @return A LocalDate object if successful, or null if the format is invalid.
+     */
+    private static LocalDate parseDate(String input) {
+        try {
+            return LocalDate.parse(input);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Attempts to parse a string into a LocalTime object.
+     *
+     * @param input The raw string to be parsed (expected format: HH:mm).
+     * @return A LocalTime object if successful, or null if the format is invalid.
+     */
+    private static LocalTime parseTime(String input) {
+        try {
+            return LocalTime.parse(input);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Attempts to parse a string into a LocalDateTime object.
+     * Handles inputs with spaces by replacing them with 'T' for ISO compatibility.
+     *
+     * @param input The raw string to be parsed (expected format: yyyy-MM-dd HH:mm).
+     * @return A LocalDateTime object if successful, or null if the format is invalid.
+     */
+    private static LocalDateTime parseDateTime(String input) {
+        try {
+            // Standardizes "yyyy-MM-dd HH:mm" to "yyyy-MM-ddTHH:mm"
+            return LocalDateTime.parse(input.trim().replace(" ", "T"));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Displays a standardized confirmation message to the user after a task is successfully added.
+     * The message includes the details of the added task and the updated total task count.
+     *
+     * @param task  The specific Task object that was just added (e.g., Todo, Deadline, or Event).
+     * @param tasks The TaskList containing the current collection of tasks, used to retrieve the new size.
+     * @param ui    The Ui object used to format and print the feedback message to the console.
      */
     private static void showAddFeedback(Task task, TaskList tasks, Ui ui) {
         String feedback = MinionResponses.MESSAGE_ADD_SUCCESS
@@ -217,7 +321,13 @@ public class Parser {
     }
 
     /**
-     * Helper to trigger storage updates.
+     * Synchronizes the current in-memory task list with the local storage file.
+     * If a persistence error occurs (e.g., file permissions or disk space issues),
+     * a "Bido" error message is displayed to the user via the UI.
+     *
+     * @param tasks   The TaskList containing the current data to be persisted.
+     * @param storage The Storage object responsible for writing data to the hard drive.
+     * @param ui      The Ui object used to report any I/O errors that occur during the save process.
      */
     private static void save(TaskList tasks, Storage storage, Ui ui) {
         try {
