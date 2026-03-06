@@ -25,7 +25,7 @@ Minion is a **desktop app for managing tasks, optimized for use via a Command Li
 
 ## Quick Start
 
-1. Ensure you have **Java 11 or above** installed in your Computer.
+1. Ensure you have **Java 17** installed in your Computer.
 2. Download the latest `minion.jar`.
 3. Copy the file to the folder you want to use as the home folder for your task list.
 4. Open a command terminal, `cd` into the folder, and use the `java -jar minion.jar` command to run the application.
