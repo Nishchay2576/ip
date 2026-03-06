@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 
 /**
  * Deals with making sense of the user command.
@@ -55,6 +56,8 @@ public class Parser {
             handleDeadline(trimmedInput, tasks, ui, storage);
         } else if (lowerInput.startsWith("event")) {
             handleEvent(trimmedInput, tasks, ui, storage);
+        } else if (lowerInput.startsWith("find")) {
+            handleFind(trimmedInput, tasks, ui);
         } else if (lowerInput.startsWith("delete")) {
             handleDelete(trimmedInput, tasks, ui, storage);
         } else {
@@ -233,6 +236,25 @@ public class Parser {
 
         ui.showMessage(feedback);
         save(tasks, storage, ui);
+    }
+
+    /**
+     * Processes the find command by searching for tasks that match the keyword.
+     *
+     * @param input The raw user input (e.g., "find book").
+     * @param tasks The task list to search within.
+     * @param ui    The UI for displaying the results.
+     * @throws MinionException If the search keyword is empty.
+     */
+    private static void handleFind(String input, TaskList tasks, Ui ui) throws MinionException {
+        if (input.trim().length() <= 5) {
+            throw new MinionException("\t  Bido! What am I looking for? Give me a keyword!");
+        }
+        String keyword = input.substring(5).trim();
+        ArrayList<Task> matches = tasks.findTasks(keyword);
+
+        // Pass the filtered list to the UI to show the user
+        ui.showSearchResults(matches);
     }
 
     /**
