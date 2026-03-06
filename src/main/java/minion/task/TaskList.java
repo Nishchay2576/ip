@@ -8,11 +8,11 @@ import java.util.ArrayList;
  * deleting, and retrieving tasks.
  */
 public class TaskList {
+
+    /** The collection of tasks managed by the chatbot. */
     private final ArrayList<Task> tasks;
 
-    /**
-     * Initializes an empty TaskList.
-     */
+    /** Initializes an empty TaskList. */
     public TaskList() {
         this.tasks = new ArrayList<>();
     }

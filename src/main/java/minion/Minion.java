@@ -13,8 +13,11 @@ import minion.exception.MinionException;
  */
 public class Minion {
 
+    /** The storage component responsible for saving and loading tasks. */
     private Storage storage;
+    /** The task list component that holds the current tasks. */
     private TaskList tasks;
+    /** The user interface component for interacting with the user. */
     private Ui ui;
 
     /**
@@ -27,7 +30,6 @@ public class Minion {
         ui = new Ui();
         storage = new Storage(filePath);
         try {
-            // Load existing tasks into the TaskList
             tasks = new TaskList(storage.load());
         } catch (MinionException e) {
             // If loading fails (e.g., file not found), start with an empty list
@@ -46,13 +48,8 @@ public class Minion {
 
         while (!isExit) {
             try {
-                // 1. Read the raw input from the user
                 String fullCommand = ui.readCommand();
-
-                // 2. Delegate the parsing and execution to the Parser
-                // Parser returns true only if the "bye" command is processed
                 isExit = Parser.parse(fullCommand, tasks, ui, storage);
-
             } catch (MinionException e) {
                 // Catch and display any chatbot-specific errors
                 ui.showError(e.getMessage());
@@ -66,7 +63,6 @@ public class Minion {
      * @param args Command line arguments (not used).
      */
     public static void main(String[] args) {
-        // Point to the standard data file location
         new Minion("data/minion.txt").run();
     }
 }

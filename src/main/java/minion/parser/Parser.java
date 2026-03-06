@@ -113,7 +113,6 @@ public class Parser {
         String description = input.substring(9, byIndex).trim();
         String by = input.substring(byIndex + 3).trim();
 
-        // Smart Parsing for Hybrid Model
         LocalDate byDate = parseDate(by);
         LocalTime byTime = parseTime(by);
         LocalDateTime byDateTime = parseDateTime(by);
@@ -154,7 +153,6 @@ public class Parser {
         String from = input.substring(fromIndex + 5, toIndex).trim();
         String to = input.substring(toIndex + 3).trim();
 
-        // Smart Parsing for start and end times
         Event newEvent = new Event(description, from, to,
                 parseDate(from), parseTime(from), parseDateTime(from),
                 parseDate(to), parseTime(to), parseDateTime(to));
@@ -177,6 +175,7 @@ public class Parser {
      */
     private static void handleMark(String input, TaskList tasks, Ui ui, Storage storage)
             throws MinionException {
+
         int taskIndex = parseIndex(input, tasks) - 1;
         Task task = tasks.getTask(taskIndex);
 
@@ -250,10 +249,9 @@ public class Parser {
         if (input.trim().length() <= 5) {
             throw new MinionException("\t  Bido! What am I looking for? Give me a keyword!");
         }
-        String keyword = input.substring(5).trim();
+        String keyword = input.substring(5).trim(); // "find " is 5 chars
         ArrayList<Task> matches = tasks.findTasks(keyword);
 
-        // Pass the filtered list to the UI to show the user
         ui.showSearchResults(matches);
     }
 

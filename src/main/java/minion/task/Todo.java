@@ -3,14 +3,14 @@ package minion.task;
 /**
  * Represents a task without any specified time constraints.
  */
-public class Todo extends Task{
+public class Todo extends Task {
 
     /**
      * Initializes a Todo task with the specified description.
      *
      * @param description Text describing the task.
      */
-    public Todo(String description){
+    public Todo(String description) {
         super(description);
     }
 
