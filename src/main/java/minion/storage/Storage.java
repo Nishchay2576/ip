@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -16,7 +19,7 @@ import minion.responses.MinionResponses;
 
 /**
  * Handles the loading and saving of task data to a local text file.
- * Uses the Scanner and FileWriter classes as specified in class notes.
+ * Optimized to handle hybrid date/time formats using java.time objects.
  */
 public class Storage {
     private String filePath;
@@ -41,21 +44,20 @@ public class Storage {
         ArrayList<Task> loadedTasks = new ArrayList<>();
         File f = new File(filePath);
 
-        // Check if file exists before attempting to read
         if (!f.exists()) {
             return loadedTasks;
         }
 
         try {
-            // Scanner uses the File object as the source of data
             Scanner s = new Scanner(f);
             while (s.hasNext()) {
                 String line = s.nextLine();
-                loadedTasks.add(parseTaskFromLine(line));
+                if (!line.trim().isEmpty()) {
+                    loadedTasks.add(parseTaskFromLine(line));
+                }
             }
             s.close();
         } catch (FileNotFoundException e) {
-            // Re-throw as MinionException to let the main class handle UI feedback
             throw new MinionException(MinionResponses.ERROR_LOADING_FILE);
         }
         return loadedTasks;
@@ -70,23 +72,20 @@ public class Storage {
     public void save(ArrayList<Task> tasks) throws IOException {
         File f = new File(filePath);
 
-        // Ensure the directory exists before writing the file
         if (f.getParentFile() != null) {
             f.getParentFile().mkdirs();
         }
 
-        // FileWriter overwrites the file by default
         FileWriter fw = new FileWriter(filePath);
         for (Task task : tasks) {
-            // System.lineSeparator() ensures compatibility across Windows/Mac
             fw.write(task.toFileFormat() + System.lineSeparator());
         }
-        // close() is required for the writing operation to be completed
         fw.close();
     }
 
     /**
-     * Private helper to translate a single line of text into a Task object.
+     * Translates a single line of text into a specific Task object.
+     * Handles reconstruction of LocalDate, LocalTime, and LocalDateTime objects.
      *
      * @param line A pipe-separated string from the text file.
      * @return A specific Task subclass (Todo, Deadline, or Event).
@@ -103,10 +102,17 @@ public class Storage {
             task = new Todo(description);
             break;
         case "D":
-            task = new Deadline(description, parts[3]);
+            // Indices: 3(byStr), 4(date), 5(time), 6(dateTime)
+            task = new Deadline(description, parts[3],
+                    parseDate(parts[4]),
+                    parseTime(parts[5]),
+                    parseDateTime(parts[6]));
             break;
         case "E":
-            task = new Event(description, parts[3], parts[4]);
+            // Indices: 3(fromStr), 4(toStr), 5-7(from objects), 8-10(to objects)
+            task = new Event(description, parts[3], parts[4],
+                    parseDate(parts[5]), parseTime(parts[6]), parseDateTime(parts[7]),
+                    parseDate(parts[8]), parseTime(parts[9]), parseDateTime(parts[10]));
             break;
         default:
             task = new Todo("Unknown Task Type");
@@ -117,5 +123,26 @@ public class Storage {
             task.setDone(true);
         }
         return task;
+    }
+
+    /**
+     * Helper to reconstruct LocalDate from file strings.
+     */
+    private LocalDate parseDate(String input) {
+        return input.equals("null") ? null : LocalDate.parse(input);
+    }
+
+    /**
+     * Helper to reconstruct LocalTime from file strings.
+     */
+    private LocalTime parseTime(String input) {
+        return input.equals("null") ? null : LocalTime.parse(input);
+    }
+
+    /**
+     * Helper to reconstruct LocalDateTime from file strings.
+     */
+    private LocalDateTime parseDateTime(String input) {
+        return input.equals("null") ? null : LocalDateTime.parse(input);
     }
 }
