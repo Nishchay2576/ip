@@ -9,13 +9,14 @@ import java.time.format.DateTimeFormatter;
  * Represents a task to be completed by a specified date or time.
  */
 public class Deadline extends Task {
-    /** Represents the raw text describing the deadline. */
+
+    /** The raw text describing the deadline. */
     private String by;
-    /** Represents the deadline as a specific date. */
+    /** The deadline as a specific date. */
     private LocalDate byDate;
-    /** Represents the deadline as a specific time. */
+    /** The deadline as a specific time. */
     private LocalTime byTime;
-    /** Represents the deadline as a specific date and time. */
+    /** The deadline as a specific date and time. */
     private LocalDateTime byDateTime;
 
     /**

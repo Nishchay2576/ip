@@ -5,10 +5,10 @@ package minion.task;
  */
 public abstract class Task {
 
-    /** Represents the description of the task. */
+    /** The description of the task. */
     protected String description;
 
-    /** Represents the completion status of the task. */
+    /** The completion status of the task. */
     protected boolean isDone;
 
     /**
@@ -48,6 +48,10 @@ public abstract class Task {
         this.isDone = isDone;
     }
 
-    /** Returns string formatted for file saving. */
+    /**
+     * Returns a string representation of the task to be saved.
+     *
+     * @return Formatted string to be saved.
+     */
     public abstract String toFileFormat();
 }

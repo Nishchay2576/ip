@@ -12,6 +12,8 @@ import minion.task.Task;
  * and displaying messages to the console.
  */
 public class Ui {
+
+    /** The scanner used to read user input from the console. */
     private final Scanner scanner;
 
     /**
@@ -28,13 +30,6 @@ public class Ui {
      */
     public String readCommand() {
         return scanner.nextLine();
-    }
-
-    /**
-     * Displays a horizontal line separator to the console.
-     */
-    public void showLine() {
-        System.out.println(MinionResponses.LINE_BREAK);
     }
 
     /**
@@ -85,9 +80,10 @@ public class Ui {
 
     /**
      * Displays the tasks that match the user's search keyword.
-     * * @param results The list of tasks that matched the search.
+     *
+     *  @param results The list of tasks that matched the search.
      */
-    public void showSearchResults(java.util.ArrayList<minion.task.Task> results) {
+    public void showSearchResults(ArrayList<minion.task.Task> results) {
         if (results.isEmpty()) {
             showMessage("\t  Bido! I couldn't find any matching tasks in your list.");
             return;
@@ -96,7 +92,6 @@ public class Ui {
         StringBuilder resultsBuilder = new StringBuilder("\t  Ba-na-na! Here are the matching tasks in your list:\n");
         for (int i = 0; i < results.size(); i++) {
             resultsBuilder.append("\t  ").append(i + 1).append(". ").append(results.get(i).toString());
-            // Don't add a newline after the very last task
             if (i < results.size() - 1) {
                 resultsBuilder.append("\n");
             }

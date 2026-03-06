@@ -22,6 +22,8 @@ import minion.responses.MinionResponses;
  * Optimized to handle hybrid date/time formats using java.time objects.
  */
 public class Storage {
+
+    /** The path to the data file. */
     private String filePath;
 
     /**
@@ -126,21 +128,30 @@ public class Storage {
     }
 
     /**
-     * Helper to reconstruct LocalDate from file strings.
+     * Reconstructs a LocalDate object from a string saved in the file.
+     *
+     * @param input The string representation of the date, or "null".
+     * @return The parsed LocalDate, or null if the input string is "null".
      */
     private LocalDate parseDate(String input) {
         return input.equals("null") ? null : LocalDate.parse(input);
     }
 
     /**
-     * Helper to reconstruct LocalTime from file strings.
+     * Reconstructs a LocalTime object from a string saved in the file.
+     *
+     * @param input The string representation of the time, or "null".
+     * @return The parsed LocalTime, or null if the input string is "null".
      */
     private LocalTime parseTime(String input) {
         return input.equals("null") ? null : LocalTime.parse(input);
     }
 
     /**
-     * Helper to reconstruct LocalDateTime from file strings.
+     * Reconstructs a LocalDateTime object from a string saved in the file.
+     *
+     * @param input The string representation of the date and time, or "null".
+     * @return The parsed LocalDateTime, or null if the input string is "null".
      */
     private LocalDateTime parseDateTime(String input) {
         return input.equals("null") ? null : LocalDateTime.parse(input);

@@ -9,19 +9,23 @@ import java.time.format.DateTimeFormatter;
  * Represents a task that starts and ends at specific times.
  */
 public class Event extends Task {
-    /** Represents the starting time of the event as a raw string. */
-    private String timeFrom;
-    /** Represents the ending time of the event as a raw string. */
-    private String timeTo;
 
-    // Start time smart variables
+    /** The starting time of the event as a raw string. */
+    private String timeFrom;
+    /** The start date of the event, or null if not specified. */
     private LocalDate fromDate;
+    /** The start time of the event, or null if not specified. */
     private LocalTime fromTime;
+    /** The start date and time of the event, or null if not specified. */
     private LocalDateTime fromDateTime;
 
-    // End time smart variables
+    /** The ending time of the event as a raw string. */
+    private String timeTo;
+    /** The end date of the event, or null if not specified. */
     private LocalDate toDate;
+    /** The end time of the event, or null if not specified. */
     private LocalTime toTime;
+    /** The end date and time of the event, or null if not specified. */
     private LocalDateTime toDateTime;
 
     /**
@@ -52,7 +56,14 @@ public class Event extends Task {
     }
 
     /**
-     * Helper to format the display string based on which smart variables are available.
+     * Formats the display string based on which smart date/time variables are available.
+     * Falls back to the raw string if no specific date or time object is present.
+     *
+     * @param raw The original raw string provided by the user.
+     * @param d The parsed LocalDate, or null.
+     * @param t The parsed LocalTime, or null.
+     * @param dt The parsed LocalDateTime, or null.
+     * @return The formatted time string for UI display.
      */
     private String getFormattedTime(String raw, LocalDate d, LocalTime t, LocalDateTime dt) {
         if (dt != null) {

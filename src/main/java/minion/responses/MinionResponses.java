@@ -1,17 +1,17 @@
 package minion.responses;
 
 public class MinionResponses {
-    /** UI Formatting. */
+    // UI Formatting
     public static final String LINE_BREAK = "\t______________________________________________________________________";
 
-    /** General Bot Messages. */
+    // General Bot Messages
     public static final String WELCOME_MESSAGE = "\t  Bello! I'm Minion :D\n" +
             "\t  Ready to conquer NUS today boss!\n" +
             "\t  What's the plan for today?";
     public static final String BYE_MESSAGE = "\t  Byee. Hope you have an amazing day ahead :)";
     public static final String UNKNOWN_COMMAND = "\t  Bi-do... I don't think that's a real command... Try again?";
 
-    /** Task List Messages. */
+    // Task List Messages
     public static final String MESSAGE_EMPTY_LIST = "\t  Your list is as empty as a banana peel! Try adding something";
     public static final String MESSAGE_LIST_HEADER = "\t  Here's the breakdown of your mission:\n";
     public static final String MESSAGE_ADD_SUCCESS = "\t  Ba-na-na! I've tossed this onto the pile for you:\n";
@@ -20,7 +20,7 @@ public class MinionResponses {
     public static final String MESSAGE_DELETE_SUCCESS = "\t  Noted.This task is gone, " +
             "just like my sleep during finals week:\n";
 
-    /** Error Messages. */
+//  Error Messages.
     public static final String ERROR_INVALID_FORMAT = "\t  Syntax Error! Use: [command] [task number].\n" +
             "\t  Check your 'mark', 'unmark' or 'delete' command parameters!";
     public static final String ERROR_NOT_INT = "\t  Please enter a valid integer for the task number.";
